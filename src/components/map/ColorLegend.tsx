@@ -9,7 +9,7 @@ export function ColorLegend() {
   const domainMax = stops[stops.length - 1].rangeMax;
 
   return (
-    <Card className="absolute bottom-4 left-4 z-[500] w-64 gap-2 border-transparent bg-card/95 py-3 text-sidebar-foreground shadow-lg backdrop-blur">
+    <Card className="w-full gap-2 border-transparent bg-card/95 py-3 text-sidebar-foreground shadow-lg backdrop-blur">
       <CardHeader className="px-4 pb-0">
         <CardTitle className="text-base font-semibold">
           {metric === "absolute" ? "Air temperature (°C)" : "vs. city average (°C)"}

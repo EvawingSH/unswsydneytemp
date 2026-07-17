@@ -1,6 +1,7 @@
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarHeader,
   SidebarRail,
   SidebarSeparator,
@@ -8,7 +9,8 @@ import {
 } from "@/components/ui/sidebar";
 import { ExploreSection } from "@/components/sidebar/ExploreSection";
 import { VisualiseSection } from "@/components/sidebar/VisualiseSection";
-import { StatsSection } from "@/components/sidebar/StatsSection";
+
+const PAPER_URL = "https://www.researchsquare.com/article/rs-7987756/v1";
 
 export function AppSidebar() {
   return (
@@ -29,9 +31,18 @@ export function AppSidebar() {
         <ExploreSection />
         <SidebarSeparator />
         <VisualiseSection />
-        <SidebarSeparator />
-        <StatsSection />
       </SidebarContent>
+      <SidebarSeparator />
+      <SidebarFooter className="px-4 py-3">
+        <a
+          href={PAPER_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-xs text-muted-foreground underline underline-offset-2 hover:text-sidebar-foreground"
+        >
+          Read the research paper
+        </a>
+      </SidebarFooter>
       <SidebarRail />
     </Sidebar>
   );

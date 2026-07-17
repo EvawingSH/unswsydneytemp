@@ -1,9 +1,8 @@
 import { useEffect, useRef } from "react";
-import { MapContainer, TileLayer, useMap } from "react-leaflet";
+import { MapContainer, Pane, TileLayer, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { useMetaData } from "@/hooks/useMetaData";
-import { useSuburbBoundaries } from "@/hooks/useSuburbData";
 import { useVizStore } from "@/store/useVizStore";
 import { SuburbLayer, SUBURB_PANE } from "@/components/map/layers/SuburbLayer";
 import { HexLayer } from "@/components/map/layers/HexLayer";
@@ -63,22 +62,7 @@ function SuburbPaneSetup() {
   return null;
 }
 
-/** Flies the map to the suburb selected via the sidebar's search combobox. */
-function FlyToSelectedSuburb() {
-  const map = useMap();
-  const { data } = useSuburbBoundaries();
-  const selectedSuburbCode = useVizStore((s) => s.selectedSuburbCode);
-
-  useEffect(() => {
-    if (!data || !selectedSuburbCode) return;
-    const feature = data.features.find((f) => f.properties.salCode === selectedSuburbCode);
-    if (!feature) return;
-    const bounds = L.geoJSON(feature).getBounds();
-    map.flyToBounds(bounds, { padding: [48, 48], maxZoom: 15 });
-  }, [data, selectedSuburbCode, map]);
-
-  return null;
-}
+const PLACE_LABELS_PANE = "placeLabelsPane";
 
 /**
  * shadcn's Sidebar collapse animates the flex layout without firing a window resize event,
@@ -113,13 +97,22 @@ export function MapView() {
       className="h-full w-full"
     >
       <TileLayer url={CARTO_BASE_URL} attribution={CARTO_ATTRIBUTION} detectRetina />
-      <TileLayer url={CARTO_LABELS_URL} detectRetina />
       {mode === "hex" && viewDimension === "2d" && <HexLayer />}
       {mode === "hex" && viewDimension === "3d" && <Hex3DLayer />}
       {mode === "suburb" && <SuburbLayer />}
       <SuburbPaneSetup />
+      {/*
+        Place-name labels (Sydney, Parramatta, Chatswood, ...) re-rendered into a pane above every
+        data layer — overlayPane (400) and SUBURB_PANE (450) — so they stay legible on top of the
+        hex/suburb fills instead of being covered by them. `Pane` (rather than a manually created
+        pane) guarantees the pane DOM node exists before this TileLayer mounts into it.
+        pointerEvents: none keeps the (mostly transparent) label tiles from intercepting
+        hover/click on the data underneath.
+      */}
+      <Pane name={PLACE_LABELS_PANE} style={{ zIndex: 460, pointerEvents: "none" }}>
+        <TileLayer url={CARTO_LABELS_URL} detectRetina />
+      </Pane>
       <FitToRasterBounds />
-      <FlyToSelectedSuburb />
       <InvalidateSizeOnResize />
     </MapContainer>
   );

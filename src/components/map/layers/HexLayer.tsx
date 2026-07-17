@@ -4,6 +4,7 @@ import type { Feature, Geometry } from "geojson";
 import { useHexData } from "@/hooks/useHexData";
 import { useHexResolution } from "@/hooks/useHexResolution";
 import { useColorScale } from "@/hooks/useColorScale";
+import { useHexSuburbMembership } from "@/hooks/useHexSuburbMembership";
 import { useVizStore } from "@/store/useVizStore";
 import type { HexProperties } from "@/lib/types";
 
@@ -15,16 +16,19 @@ export function HexLayer() {
   const resolution = useHexResolution();
   const { data } = useHexData(dateId, resolution);
   const active = useColorScale();
+  const hexSuburbMembership = useHexSuburbMembership(data?.features);
+  const inspectHex = useVizStore((s) => s.inspectHex);
 
   if (!data) return null;
 
   const style = (feature?: Feature<Geometry, HexProperties>): PathOptions => {
     const props = feature!.properties;
     const value = metric === "absolute" ? props.avgTemp : props.anomaly;
-    const inRange = value >= filterRange[0] && value <= filterRange[1];
+    const inValueRange = value >= filterRange[0] && value <= filterRange[1];
+    const inSuburbFilter = !hexSuburbMembership || hexSuburbMembership.has(props.h3);
     return {
       fillColor: active.scale(value),
-      fillOpacity: inRange ? opacity : 0,
+      fillOpacity: inValueRange && inSuburbFilter ? opacity : 0,
       stroke: false,
     };
   };
@@ -34,6 +38,7 @@ export function HexLayer() {
     const value = metric === "absolute" ? props.avgTemp : props.anomaly;
     const sign = metric === "anomaly" && value > 0 ? "+" : "";
     layer.bindTooltip(`${sign}${value.toFixed(2)}°C · ${props.count} px`, { sticky: true });
+    layer.on("click", () => inspectHex(props));
   };
 
   return (

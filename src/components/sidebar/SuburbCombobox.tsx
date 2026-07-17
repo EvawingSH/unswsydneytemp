@@ -12,10 +12,12 @@ import {
 import { useSuburbBoundaries } from "@/hooks/useSuburbData";
 import { useVizStore } from "@/store/useVizStore";
 
+/** Multi-select suburb search — picks restrict both hex and suburb-average data to just these suburbs. */
 export function SuburbCombobox() {
   const { data } = useSuburbBoundaries();
-  const selectedSuburbCode = useVizStore((s) => s.selectedSuburbCode);
-  const selectSuburb = useVizStore((s) => s.selectSuburb);
+  const filterSuburbCodes = useVizStore((s) => s.filterSuburbCodes);
+  const toggleSuburbFilter = useVizStore((s) => s.toggleSuburbFilter);
+  const clearSuburbFilter = useVizStore((s) => s.clearSuburbFilter);
   const [open, setOpen] = useState(false);
 
   const suburbs = useMemo(() => {
@@ -25,7 +27,15 @@ export function SuburbCombobox() {
       .sort((a, b) => a.salName.localeCompare(b.salName));
   }, [data]);
 
-  const selected = suburbs.find((s) => s.salCode === selectedSuburbCode);
+  const selectedCodes = useMemo(() => new Set(filterSuburbCodes), [filterSuburbCodes]);
+
+  const triggerLabel = useMemo(() => {
+    if (selectedCodes.size === 0) return "Search suburbs...";
+    if (selectedCodes.size === 1) {
+      return suburbs.find((s) => selectedCodes.has(s.salCode))?.salName ?? "1 suburb selected";
+    }
+    return `${selectedCodes.size} suburbs selected`;
+  }, [selectedCodes, suburbs]);
 
   return (
     <div>
@@ -34,15 +44,19 @@ export function SuburbCombobox() {
           aria-label="Suburb"
           className="flex h-11 w-full items-center justify-between gap-2 rounded-full border border-transparent bg-sidebar-accent px-4 text-base font-medium"
         >
-          <span className={selected ? "truncate" : "truncate font-normal text-muted-foreground"}>
-            {selected ? selected.salName : "Search suburbs..."}
+          <span
+            className={
+              selectedCodes.size > 0 ? "truncate" : "truncate font-normal text-muted-foreground"
+            }
+          >
+            {triggerLabel}
           </span>
-          {selected ? (
+          {selectedCodes.size > 0 ? (
             <XIcon
               className="size-4 shrink-0 text-muted-foreground"
               onClick={(e) => {
                 e.stopPropagation();
-                selectSuburb(null);
+                clearSuburbFilter();
               }}
             />
           ) : (
@@ -59,10 +73,8 @@ export function SuburbCombobox() {
                   <CommandItem
                     key={s.salCode}
                     value={s.salName}
-                    onSelect={() => {
-                      selectSuburb(s.salCode);
-                      setOpen(false);
-                    }}
+                    data-checked={selectedCodes.has(s.salCode) ? "true" : "false"}
+                    onSelect={() => toggleSuburbFilter(s.salCode)}
                   >
                     {s.salName}
                   </CommandItem>

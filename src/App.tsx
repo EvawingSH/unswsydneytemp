@@ -4,6 +4,7 @@ import { AppSidebar } from "@/components/sidebar/AppSidebar";
 import { MapView } from "@/components/map/MapView";
 import { InfoBox } from "@/components/map/InfoBox";
 import { ColorLegend } from "@/components/map/ColorLegend";
+import { RankingBox } from "@/components/map/RankingBox";
 
 /** Visible reopen affordance — the in-sidebar trigger disappears along with the sidebar itself
  *  once collapsed, so this floats over the map whenever there'd otherwise be no way back. */
@@ -26,8 +27,11 @@ function App() {
         <SidebarInset className="h-svh overflow-hidden">
           <MapView />
           <FloatingSidebarTrigger />
-          <InfoBox />
-          <ColorLegend />
+          <div className="absolute top-4 right-4 z-[500] flex w-64 flex-col gap-3">
+            <InfoBox />
+            <ColorLegend />
+            <RankingBox />
+          </div>
         </SidebarInset>
       </SidebarProvider>
     </TooltipProvider>

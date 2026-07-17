@@ -2,18 +2,23 @@ import { scaleQuantize, scaleThreshold } from "d3-scale";
 
 export type ColorScale = (value: number) => string;
 
-/** 10-step blue-to-red palette, sampled from designref/colorgrade.png. */
+/**
+ * 10-step blue-to-red palette, sampled from designref/colorgrade.png. The hot half (20-30°) uses
+ * a ColorBrewer YlOrRd-style ramp — hue shifts yellow -> orange -> red while lightness steps down
+ * each stage, so steps stay legible as one continuous progression instead of two similar oranges
+ * blurring together (the original) or a hue jump reading as unrelated (an earlier pink attempt).
+ */
 export const TEMPERATURE_COLOR_STOPS: readonly string[] = [
   "#2b78b9",
   "#609d92",
   "#b6e299",
   "#dff595",
   "#fef6af",
-  "#fed984",
-  "#fdad63",
-  "#fb814e",
-  "#f9683e",
-  "#df483e",
+  "#fed976",
+  "#feb24c",
+  "#fd8d3c",
+  "#fc4e2a",
+  "#bd0026",
 ];
 
 /** Marks "about average" on the anomaly scale — a 1°-wide white band centered on 0. */

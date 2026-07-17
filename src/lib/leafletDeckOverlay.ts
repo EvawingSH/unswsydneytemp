@@ -1,5 +1,5 @@
 import * as L from "leaflet";
-import { Deck, type DeckProps } from "@deck.gl/core";
+import { Deck, type DeckProps, type PickingInfo } from "@deck.gl/core";
 
 /** Fixed camera tilt so extruded (3D) polygons actually read as height, not a flat top-down fill. */
 export const DECK_OVERLAY_PITCH = 45;
@@ -32,8 +32,12 @@ export class PitchedDeckOverlay extends L.Layer {
   private container?: HTMLDivElement;
   private deck?: Deck;
 
-  constructor(props: DeckProps) {
+  constructor(props: DeckProps, options?: L.LayerOptions) {
+    // L.Layer has no initialize() of its own to merge constructor options into `this.options`
+    // (unlike most concrete Leaflet layers), so without this, passing `{ pane }` here would be
+    // silently ignored and the overlay would always fall back to the default 'overlayPane'.
     super();
+    if (options) L.Util.setOptions(this, options);
     this.deckProps = props;
   }
 
@@ -83,6 +87,19 @@ export class PitchedDeckOverlay extends L.Layer {
   setProps(props: Partial<DeckProps>): void {
     Object.assign(this.deckProps, props);
     this.deck?.setProps(props);
+  }
+
+  /**
+   * Synchronous pick at a viewport point (from a native MouseEvent's clientX/clientY), bypassing
+   * deck.gl's own gesture-recognizer-driven onClick/onHover. Layer onClick handlers proved
+   * unreliable here — clicks reliably reach the canvas (confirmed via raw DOM listeners) but
+   * mjolnir.js's tap/click recognizer never fires — so callers should drive picking through this
+   * instead of a layer's `onClick` prop.
+   */
+  pickObjectAt(clientX: number, clientY: number): PickingInfo | null {
+    if (!this.deck || !this.container) return null;
+    const rect = this.container.getBoundingClientRect();
+    return this.deck.pickObject({ x: clientX - rect.left, y: clientY - rect.top, radius: 2 });
   }
 
   private isZoomAnimated(): boolean {
