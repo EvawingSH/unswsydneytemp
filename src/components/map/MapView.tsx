@@ -11,8 +11,12 @@ import { Hex3DLayer } from "@/components/map/layers/Hex3DLayer";
 // "light_nolabels" (geography/water, no street or suburb text) + "light_only_labels" (major place
 // names only, transparent elsewhere) stacked together give a clean basemap close to designref/map1.png
 // without the road/POI clutter of CARTO's full "light_all" style.
-const CARTO_BASE_URL = "https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png";
-const CARTO_LABELS_URL = "https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png";
+//
+// CARTO requires a (free) API key for its basemap tiles — request one at
+// https://dashboard.basemaps.carto.com/signin and set VITE_CARTO_API_KEY (see .env.local / host env).
+const CARTO_KEY = import.meta.env.VITE_CARTO_API_KEY;
+const CARTO_BASE_URL = `https://{s}.basemaps.cartocdn.com/rastertiles/light_nolabels/{z}/{x}/{y}{r}.png?key=${CARTO_KEY}`;
+const CARTO_LABELS_URL = `https://{s}.basemaps.cartocdn.com/rastertiles/light_only_labels/{z}/{x}/{y}{r}.png?key=${CARTO_KEY}`;
 const CARTO_ATTRIBUTION =
   '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>';
 
